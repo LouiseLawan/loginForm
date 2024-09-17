@@ -17,16 +17,15 @@ const BackgroundImage = styled.View`
 `;
 
 const LoginBox = styled.View`
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.75) ;
   width: 80%;
   padding: 20px;
   border-radius: 10px;
   elevation: 10;
-  opacity: 50;
 `;
 
 const Title = styled.Text`
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
   color: black;
   text-align: center;
