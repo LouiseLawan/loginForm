@@ -22,6 +22,7 @@ const LoginBox = styled.View`
   padding: 20px;
   border-radius: 10px;
   elevation: 10;
+  opacity: 50;
 `;
 
 const Title = styled.Text`
