@@ -1,6 +1,11 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
 
 const Container = styled.View`
   flex: 1;
@@ -60,31 +65,150 @@ const LinkText = styled.Text`
   margin-top: 10px;
 `;
 
-export default function App() {
+function LoginScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const storedUsername = await AsyncStorage.getItem('username');
+      const storedPassword = await AsyncStorage.getItem('password');
+
+      if (storedUsername === username && storedPassword === password) {
+        Alert.alert('Success', 'Login successful!');
+      } else {
+        Alert.alert('Error', 'Invalid username or password');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred during login');
+    }
+  };
+
   return (
     <Container>
       <StatusBar barStyle="light-content" />
       <BackgroundImage />
       <LoginBox>
         <Title>Login</Title>
-        <Input placeholder="Email ID" placeholderTextColor="gray" />
-        <Input placeholder="Password" placeholderTextColor="gray" secureTextEntry={true} />
-        <TouchableOpacity>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </TouchableOpacity>
-        <Button>
+        <Input 
+          placeholder="Username" 
+          placeholderTextColor="gray" 
+          value={username} 
+          onChangeText={setUsername} 
+        />
+        <Input 
+          placeholder="Password" 
+          placeholderTextColor="gray" 
+          secureTextEntry={true} 
+          value={password} 
+          onChangeText={setPassword} 
+        />
+        <Button onPress={handleLogin}>
           <ButtonText>Login</ButtonText>
         </Button>
-        <LinkText>Don't have an account? Register</LinkText>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <LinkText>Don't have an account? Register</LinkText>
+        </TouchableOpacity>
       </LoginBox>
     </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  forgotPassword: {
-    color: 'black',
-    textAlign: 'right',
-    marginBottom: 15,
-  },
-});
+function RegisterScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (username === '' || password === '') {
+      Alert.alert('Error', 'Username and Password cannot be empty');
+      return;
+    }
+
+    try {
+      await AsyncStorage.setItem('username', username);
+      await AsyncStorage.setItem('password', password);
+      
+      Alert.alert('Success', 'Registration successful!');
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred during registration');
+    }
+  };
+
+  const checkStoredData = async () => {
+    try {
+      const storedUsername = await AsyncStorage.getItem('username');
+      const storedPassword = await AsyncStorage.getItem('password');
+
+      if (storedUsername && storedPassword) {
+        Alert.alert('Stored Data', `Username: ${storedUsername}\nPassword: ${storedPassword}`);
+      } else {
+        Alert.alert('No Data', 'No data found in the database.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to retrieve stored data.');
+      console.log('Error retrieving stored data:', error);
+    }
+  };
+
+  return (
+    <Container>
+      <StatusBar barStyle="light-content" />
+      <BackgroundImage />
+      <LoginBox>
+        <Title>Register</Title>
+        <Input 
+          placeholder="Username" 
+          placeholderTextColor="gray" 
+          value={username} 
+          onChangeText={setUsername} 
+        />
+        <Input 
+          placeholder="Password" 
+          placeholderTextColor="gray" 
+          secureTextEntry={true} 
+          value={password} 
+          onChangeText={setPassword} 
+        />
+        <Input 
+          placeholder="Confirm Password" 
+          placeholderTextColor="gray" 
+          secureTextEntry={true} 
+          value={confirmPassword} 
+          onChangeText={setConfirmPassword} 
+        />
+        <Button onPress={handleRegister}>
+          <ButtonText>Sign Up</ButtonText>
+        </Button>
+
+        <Button onPress={checkStoredData} style={{ marginTop: 10 }}>
+          <ButtonText>Check Database</ButtonText>
+        </Button>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <LinkText>Already have an account? Login</LinkText>
+        </TouchableOpacity>
+      </LoginBox>
+    </Container>
+  );
+}
+
+
+
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
