@@ -136,9 +136,17 @@ function RegisterScreen({ navigation }) {
       const existingUsersJSON = await AsyncStorage.getItem('users');
       const existingUsers = existingUsersJSON ? JSON.parse(existingUsersJSON) : [];
   
+      // Check if the username already exists
+      const userExists = existingUsers.some((user) => user.username === username);
+  
+      if (userExists) {
+        Alert.alert('Error', 'Username is already taken');
+        return;
+      }
+  
       const newUser = { username, password };
       const updatedUsers = [...existingUsers, newUser];
-
+  
       await AsyncStorage.setItem('users', JSON.stringify(updatedUsers));
   
       Alert.alert('Success', 'Registration successful!');
@@ -147,6 +155,7 @@ function RegisterScreen({ navigation }) {
       Alert.alert('Error', 'An error occurred during registration');
     }
   };
+  
   
 
   const checkStoredData = async () => {
