@@ -71,10 +71,12 @@ function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
-      const storedPassword = await AsyncStorage.getItem('password');
-
-      if (storedUsername === username && storedPassword === password) {
+      const usersJSON = await AsyncStorage.getItem('users');
+      const users = usersJSON ? JSON.parse(usersJSON) : [];
+  
+      const user = users.find((user) => user.username === username && user.password === password);
+  
+      if (user) {
         Alert.alert('Success', 'Login successful!');
       } else {
         Alert.alert('Error', 'Invalid username or password');
@@ -83,7 +85,7 @@ function LoginScreen({ navigation }) {
       Alert.alert('Error', 'An error occurred during login');
     }
   };
-
+  
   return (
     <Container>
       <StatusBar barStyle="light-content" />
@@ -124,30 +126,37 @@ function RegisterScreen({ navigation }) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
-
+  
     if (username === '' || password === '') {
       Alert.alert('Error', 'Username and Password cannot be empty');
       return;
     }
-
+  
     try {
-      await AsyncStorage.setItem('username', username);
-      await AsyncStorage.setItem('password', password);
-      
+      const existingUsersJSON = await AsyncStorage.getItem('users');
+      const existingUsers = existingUsersJSON ? JSON.parse(existingUsersJSON) : [];
+  
+      const newUser = { username, password };
+      const updatedUsers = [...existingUsers, newUser];
+
+      await AsyncStorage.setItem('users', JSON.stringify(updatedUsers));
+  
       Alert.alert('Success', 'Registration successful!');
       navigation.navigate('Login');
     } catch (error) {
       Alert.alert('Error', 'An error occurred during registration');
     }
   };
+  
 
   const checkStoredData = async () => {
     try {
-      const storedUsername = await AsyncStorage.getItem('username');
-      const storedPassword = await AsyncStorage.getItem('password');
-
-      if (storedUsername && storedPassword) {
-        Alert.alert('Stored Data', `Username: ${storedUsername}\nPassword: ${storedPassword}`);
+      const usersJSON = await AsyncStorage.getItem('users');
+      const users = usersJSON ? JSON.parse(usersJSON) : [];
+  
+      if (users.length > 0) {
+        let userData = users.map((user, index) => `User ${index + 1}:\nUsername: ${user.username}\nPassword: ${user.password}`).join('\n\n');
+        Alert.alert('Stored Data', userData);
       } else {
         Alert.alert('No Data', 'No data found in the database.');
       }
@@ -156,6 +165,7 @@ function RegisterScreen({ navigation }) {
       console.log('Error retrieving stored data:', error);
     }
   };
+  
 
   return (
     <Container>
@@ -198,9 +208,6 @@ function RegisterScreen({ navigation }) {
     </Container>
   );
 }
-
-
-
 
 export default function App() {
   return (
