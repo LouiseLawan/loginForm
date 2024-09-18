@@ -4,7 +4,6 @@ import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useFocusEffect } from '@react-navigation/native';
 
 const Stack = createStackNavigator();
 
@@ -66,34 +65,54 @@ const LinkText = styled.Text`
   margin-top: 10px;
 `;
 
+const DashboardBox = styled.View`
+  background-color: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 85%;
+  elevation: 10;
+  align-items: center;
+`;
+
+const Section = styled.View`
+  margin-bottom: 20px;
+`;
+
+const SectionTitle = styled.Text`
+  font-size: 18px;
+  color: white;
+  font-weight: bold;
+`;
+
+
 function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setUsername('');
-      setPassword('');
-    }, [])
-  );
 
   const handleLogin = async () => {
     try {
       const usersJSON = await AsyncStorage.getItem('users');
       const users = usersJSON ? JSON.parse(usersJSON) : [];
   
-      const user = users.find((user) => user.username === username && user.password === password);
+      const user = users.find((user) => user.username === username);
   
       if (user) {
-        Alert.alert('Success', 'Login successful!');
+        if (user.password === password) {
+          setUsername('');
+          setPassword('');
+          navigation.navigate('Welcome', { username });
+        } else {
+          Alert.alert('Error', 'Incorrect password');
+        }
       } else {
-        Alert.alert('Error', 'Invalid username or password');
+        Alert.alert('Error', 'User not found');
       }
     } catch (error) {
       Alert.alert('Error', 'An error occurred during login');
     }
   };
   
+
   return (
     <Container>
       <StatusBar barStyle="light-content" />
@@ -116,7 +135,11 @@ function LoginScreen({ navigation }) {
         <Button onPress={handleLogin}>
           <ButtonText>Login</ButtonText>
         </Button>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <TouchableOpacity onPress={() => {
+          setUsername(''); 
+          setPassword(''); 
+          navigation.navigate('Register');
+        }}>
           <LinkText>Don't have an account? Register</LinkText>
         </TouchableOpacity>
       </LoginBox>
@@ -124,12 +147,33 @@ function LoginScreen({ navigation }) {
   );
 }
 
+function WelcomeScreen({ route, navigation }) {
+  
+  const handleLogout = () => {
+    navigation.navigate('Login'); 
+  };
+  const { username } = route.params;
+  return (
+    <Container>
+      <DashboardBox>
+      <Title>Welcome, {username}!</Title> 
+        
+        <Section>
+          <SectionTitle>Logout</SectionTitle>
+          <Button onPress={handleLogout}>
+            <ButtonText>Logout</ButtonText>
+          </Button>
+        </Section>
+      </DashboardBox>
+    </Container>
+  );
+}
+
+
 function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  
 
   const handleRegister = async () => {
     const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/; 
@@ -253,6 +297,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
