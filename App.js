@@ -4,6 +4,7 @@ import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Stack = createStackNavigator();
 
@@ -69,6 +70,13 @@ function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  useFocusEffect(
+    React.useCallback(() => {
+      setUsername('');
+      setPassword('');
+    }, [])
+  );
+
   const handleLogin = async () => {
     try {
       const usersJSON = await AsyncStorage.getItem('users');
@@ -120,6 +128,8 @@ function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  
 
   const handleRegister = async () => {
     const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/; 
