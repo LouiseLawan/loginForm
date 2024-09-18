@@ -122,6 +122,24 @@ function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleRegister = async () => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/; 
+    const uppercasePattern = /[A-Z]/; 
+  
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters long');
+      return;
+    }
+  
+    if (!specialCharPattern.test(password)) {
+      Alert.alert('Error', 'Password must contain at least one special character and uppercase letter');
+      return;
+    }
+  
+    if (!uppercasePattern.test(password)) {
+      Alert.alert('Error', 'Password must contain at least one uppercase letter');
+      return;
+    }
+  
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
@@ -136,7 +154,7 @@ function RegisterScreen({ navigation }) {
       const existingUsersJSON = await AsyncStorage.getItem('users');
       const existingUsers = existingUsersJSON ? JSON.parse(existingUsersJSON) : [];
   
-      // Check if the username already exists
+      
       const userExists = existingUsers.some((user) => user.username === username);
   
       if (userExists) {
@@ -157,6 +175,7 @@ function RegisterScreen({ navigation }) {
   };
   
   
+
 
   const checkStoredData = async () => {
     try {
