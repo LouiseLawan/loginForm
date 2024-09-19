@@ -22,7 +22,7 @@ const BackgroundImage = styled.View`
 `;
 
 const LoginBox = styled.View`
-  background-color: rgba(255, 255, 255, 0.75) ;
+  background-color: rgba(255, 255, 255, 0.75);
   width: 80%;
   padding: 20px;
   border-radius: 10px;
@@ -84,7 +84,6 @@ const SectionTitle = styled.Text`
   font-weight: bold;
 `;
 
-
 function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -111,7 +110,6 @@ function LoginScreen({ navigation }) {
       Alert.alert('Error', 'An error occurred during login');
     }
   };
-  
 
   return (
     <Container>
@@ -148,7 +146,6 @@ function LoginScreen({ navigation }) {
 }
 
 function WelcomeScreen({ route, navigation }) {
-  
   const handleLogout = () => {
     navigation.navigate('Login'); 
   };
@@ -156,8 +153,7 @@ function WelcomeScreen({ route, navigation }) {
   return (
     <Container>
       <DashboardBox>
-      <Title>Welcome, {username}!</Title> 
-        
+        <Title>Welcome, {username}!</Title> 
         <Section>
           <SectionTitle>Logout</SectionTitle>
           <Button onPress={handleLogout}>
@@ -168,7 +164,6 @@ function WelcomeScreen({ route, navigation }) {
     </Container>
   );
 }
-
 
 function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -208,7 +203,6 @@ function RegisterScreen({ navigation }) {
       const existingUsersJSON = await AsyncStorage.getItem('users');
       const existingUsers = existingUsersJSON ? JSON.parse(existingUsersJSON) : [];
   
-      
       const userExists = existingUsers.some((user) => user.username === username);
   
       if (userExists) {
@@ -227,27 +221,6 @@ function RegisterScreen({ navigation }) {
       Alert.alert('Error', 'An error occurred during registration');
     }
   };
-  
-  
-
-
-  const checkStoredData = async () => {
-    try {
-      const usersJSON = await AsyncStorage.getItem('users');
-      const users = usersJSON ? JSON.parse(usersJSON) : [];
-  
-      if (users.length > 0) {
-        let userData = users.map((user, index) => `User ${index + 1}:\nUsername: ${user.username}\nPassword: ${user.password}`).join('\n\n');
-        Alert.alert('Stored Data', userData);
-      } else {
-        Alert.alert('No Data', 'No data found in the database.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to retrieve stored data.');
-      console.log('Error retrieving stored data:', error);
-    }
-  };
-  
 
   return (
     <Container>
@@ -279,10 +252,6 @@ function RegisterScreen({ navigation }) {
           <ButtonText>Sign Up</ButtonText>
         </Button>
 
-        <Button onPress={checkStoredData} style={{ marginTop: 10 }}>
-          <ButtonText>Check Database</ButtonText>
-        </Button>
-
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <LinkText>Already have an account? Login</LinkText>
         </TouchableOpacity>
@@ -295,8 +264,8 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
