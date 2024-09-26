@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { useRouter, useSearchParams } from 'expo-router';
+import { StatusBar } from 'react-native';
 import styled from 'styled-components/native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const Container = styled.View`
   flex: 1;
+  background-color: black;
   justify-content: center;
   align-items: center;
-  background-color: black;
 `;
 
 const DashboardBox = styled.View`
@@ -19,10 +19,6 @@ const DashboardBox = styled.View`
   align-items: center;
 `;
 
-const Section = styled.View`
-  margin-bottom: 20px;
-`;
-
 const Title = styled.Text`
   font-size: 30px;
   font-weight: bold;
@@ -31,10 +27,8 @@ const Title = styled.Text`
   margin-bottom: 20px;
 `;
 
-const SectionTitle = styled.Text`
-  font-size: 18px;
-  color: black;
-  font-weight: bold;
+const Section = styled.View`
+  margin-bottom: 20px;
 `;
 
 const Button = styled.TouchableOpacity`
@@ -49,20 +43,21 @@ const ButtonText = styled.Text`
   font-size: 16px;
 `;
 
-const WelcomeScreen = () => {
+export default function WelcomeScreen() {
+  const { username } = useLocalSearchParams();
+
   const router = useRouter();
-  const { username } = useSearchParams(); // Get username from URL query params
 
   const handleLogout = () => {
-    router.replace('/'); // Navigate back to Login Screen
+    router.push(`/LoginScreen`);
   };
 
   return (
     <Container>
+      <StatusBar barStyle="light-content" />
       <DashboardBox>
         <Title>Welcome, {username}!</Title>
         <Section>
-          <SectionTitle>Logout</SectionTitle>
           <Button onPress={handleLogout}>
             <ButtonText>Logout</ButtonText>
           </Button>
@@ -70,6 +65,4 @@ const WelcomeScreen = () => {
       </DashboardBox>
     </Container>
   );
-};
-
-export default WelcomeScreen;
+}

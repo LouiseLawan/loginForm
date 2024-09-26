@@ -2,6 +2,7 @@
   "expo": {
     "name": "sample",
     "slug": "sample",
+    "scheme": "sample",
     "version": "1.0.0",
     "plugins": [
       "expo-router"
