@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router'; 
+import { useRouter } from 'expo-router';
+import { UserContext } from '/UserContext'; 
 
 const Container = styled.View`
   flex: 1;
@@ -56,19 +58,24 @@ const LinkText = styled.Text`
 `;
 
 export default function LoginScreen() {
-  const router = useRouter(); 
+  const { loggedInUser, setLoggedInUser } = useContext(UserContext); // Access context
+  const router = useRouter();
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const savedUser = await AsyncStorage.getItem('loggedInUser');
-        if (savedUser) {
-          const user = JSON.parse(savedUser);
-          router.push(`/WelcomeScreen?username=${user.username}`);
+        if (loggedInUser) {
+          router.push(`/WelcomeScreen?username=${loggedInUser.username}`);
+        } else {
+          const savedUser = await AsyncStorage.getItem('loggedInUser');
+          if (savedUser) {
+            const user = JSON.parse(savedUser);
+            setLoggedInUser(user);
+            router.push(`/WelcomeScreen?username=${user.username}`);
+          }
         }
       } catch (error) {
         console.error('Error reading login status:', error);
@@ -76,9 +83,9 @@ export default function LoginScreen() {
     };
 
     checkLoginStatus();
-  }, []);
+  }, [loggedInUser, setLoggedInUser]);
 
-  // Fetch users only once and memoize it
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -92,18 +99,15 @@ export default function LoginScreen() {
     fetchUsers();
   }, []);
 
-  // Memoize the user object lookup for login efficiency
-  const memoizedUser = useMemo(() => {
-    return users.find((user) => user.username === username);
-  }, [username, users]);
-
   const handleLogin = async () => {
     try {
-      if (memoizedUser) {
-        if (memoizedUser.password === password) {
-          // Save user to AsyncStorage for automatic login
-          await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
+      const user = users.find((user) => user.username === username);
 
+      if (user) {
+        if (user.password === password) {
+     
+          await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
+          setLoggedInUser({ username });
           setUsername('');
           setPassword('');
           router.push(`/WelcomeScreen?username=${username}`);
