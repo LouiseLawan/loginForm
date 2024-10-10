@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -60,6 +60,23 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const savedUser = await AsyncStorage.getItem('loggedInUser');
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          router.push(`/WelcomeScreen?username=${user.username}`);
+        }
+      } catch (error) {
+        console.error('Error reading login status:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
   const handleLogin = async () => {
     try {
       const usersJSON = await AsyncStorage.getItem('users');
@@ -69,6 +86,9 @@ export default function LoginScreen() {
 
       if (user) {
         if (user.password === password) {
+          // Save user to AsyncStorage for automatic login
+          await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
+
           setUsername('');
           setPassword('');
           router.push(`/WelcomeScreen?username=${username}`); 

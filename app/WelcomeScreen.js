@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
 import styled from 'styled-components/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const Container = styled.View`
@@ -48,8 +49,13 @@ export default function WelcomeScreen() {
 
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push(`/LoginScreen`);
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('loggedInUser');
+      router.push(`/LoginScreen`);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (
