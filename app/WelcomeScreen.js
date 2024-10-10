@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -46,8 +46,10 @@ const ButtonText = styled.Text`
 
 export default function WelcomeScreen() {
   const { username } = useLocalSearchParams();
-
   const router = useRouter();
+
+  // Memoizing the greeting message
+  const greetingMessage = useMemo(() => `Welcome, ${username}!`, [username]);
 
   const handleLogout = async () => {
     try {
@@ -62,7 +64,7 @@ export default function WelcomeScreen() {
     <Container>
       <StatusBar barStyle="light-content" />
       <DashboardBox>
-        <Title>Welcome, {username}!</Title>
+        <Title>{greetingMessage}</Title>
         <Section>
           <Button onPress={handleLogout}>
             <ButtonText>Logout</ButtonText>
