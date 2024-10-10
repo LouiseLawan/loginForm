@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -59,6 +59,7 @@ export default function LoginScreen() {
   const router = useRouter(); 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [users, setUsers] = useState([]);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -77,21 +78,35 @@ export default function LoginScreen() {
     checkLoginStatus();
   }, []);
 
+  // Fetch users only once and memoize it
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const usersJSON = await AsyncStorage.getItem('users');
+        setUsers(usersJSON ? JSON.parse(usersJSON) : []);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Memoize the user object lookup for login efficiency
+  const memoizedUser = useMemo(() => {
+    return users.find((user) => user.username === username);
+  }, [username, users]);
+
   const handleLogin = async () => {
     try {
-      const usersJSON = await AsyncStorage.getItem('users');
-      const users = usersJSON ? JSON.parse(usersJSON) : [];
-
-      const user = users.find((user) => user.username === username);
-
-      if (user) {
-        if (user.password === password) {
+      if (memoizedUser) {
+        if (memoizedUser.password === password) {
           // Save user to AsyncStorage for automatic login
           await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
 
           setUsername('');
           setPassword('');
-          router.push(`/WelcomeScreen?username=${username}`); 
+          router.push(`/WelcomeScreen?username=${username}`);
         } else {
           Alert.alert('Error', 'Incorrect password');
         }
