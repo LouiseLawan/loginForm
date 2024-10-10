@@ -4,7 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { UserContext } from '/UserContext'; 
+import { UserContext } from './UserContext'; 
 
 const Container = styled.View`
   flex: 1;
