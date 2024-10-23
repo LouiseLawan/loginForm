@@ -1,9 +1,12 @@
+// LoginScreen.js
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
+import { auth } from './firebaseConfig'; // Import Firebase auth
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { UserContext } from './UserContext'; 
+import { UserContext } from './UserContext'; // Import your UserContext if using context
 
 const Container = styled.View`
   flex: 1;
@@ -57,12 +60,11 @@ const LinkText = styled.Text`
 `;
 
 export default function LoginScreen() {
-  const { loggedInUser, setLoggedInUser } = useContext(UserContext); // Access context
+  const { setLoggedInUser } = useContext(UserContext);
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -71,55 +73,37 @@ export default function LoginScreen() {
         if (savedUser) {
           const user = JSON.parse(savedUser);
           setLoggedInUser(user);
-          router.replace(`/WelcomeScreen?username=${user.username}`); // Use replace instead of push
+          router.replace(`/WelcomeScreen?email=${user.email}`);
         }
       } catch (error) {
         console.error('Error reading login status:', error);
       } finally {
-        setLoading(false); // Stop loading once login status is checked
+        setLoading(false);
       }
     };
 
     checkLoginStatus();
   }, [setLoggedInUser, router]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersJSON = await AsyncStorage.getItem('users');
-        setUsers(usersJSON ? JSON.parse(usersJSON) : []);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
   const handleLogin = async () => {
     try {
-      const user = users.find((user) => user.username === username);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (user) {
-        if (user.password === password) {
-          await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
-          setLoggedInUser({ username });
-          setUsername('');
-          setPassword('');
-          router.replace(`/WelcomeScreen?username=${username}`); // Use replace to prevent going back to the login screen
-        } else {
-          Alert.alert('Error', 'Incorrect password');
-        }
-      } else {
-        Alert.alert('Error', 'User not found');
-      }
+      // Save user email in AsyncStorage
+      await AsyncStorage.setItem('loggedInUser', JSON.stringify({ email: user.email }));
+
+      setLoggedInUser({ email: user.email });
+      setEmail('');
+      setPassword('');
+      router.replace(`/WelcomeScreen?email=${user.email}`);
     } catch (error) {
-      Alert.alert('Error', 'An error occurred during login');
+      Alert.alert('Error', error.message);
     }
   };
 
   if (loading) {
-    return <Text>Loading...</Text>; // Optionally show a loading state
+    return <Text>Loading...</Text>;
   }
 
   return (
@@ -128,10 +112,10 @@ export default function LoginScreen() {
       <LoginBox>
         <Title>Login</Title>
         <Input
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor="gray"
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
         />
         <Input
           placeholder="Password"

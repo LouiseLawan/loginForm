@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+// WelcomeScreen.js
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 const Container = styled.View`
   flex: 1;
@@ -45,17 +46,16 @@ const ButtonText = styled.Text`
 `;
 
 export default function WelcomeScreen() {
-  const { username } = useLocalSearchParams();
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Track login status
-
-  // Memoizing the greeting message
-  const greetingMessage = useMemo(() => `Welcome, ${username}!`, [username]);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       const user = await AsyncStorage.getItem('loggedInUser');
-      if (!user) {
+      if (user) {
+        setEmail(JSON.parse(user).email);
+      } else {
         setIsLoggedIn(false);
         router.replace('/LoginScreen');
       }
@@ -66,19 +66,22 @@ export default function WelcomeScreen() {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('loggedInUser');
-      setIsLoggedIn(false); // Set login state to false after logout
-      router.replace('/LoginScreen'); // Ensure navigation to login
+      setIsLoggedIn(false);
+      router.replace('/LoginScreen');
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
+
+  // Extract username from email
+  const username = email.split('@')[0];
 
   return (
     isLoggedIn && (
       <Container>
         <StatusBar barStyle="light-content" />
         <DashboardBox>
-          <Title>{greetingMessage}</Title>
+          <Title>Welcome, {username}!</Title>
           <Section>
             <Button onPress={handleLogout}>
               <ButtonText>Logout</ButtonText>

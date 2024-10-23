@@ -16,13 +16,14 @@
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.2.0",
     "expo": "~51.0.28",
+    "expo-router": "~3.5.23",
     "expo-status-bar": "~1.12.1",
+    "firebase": "^11.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
     "react-native-web": "~0.19.10",
-    "styled-components": "^6.1.13",
-    "expo-router": "~3.5.23"
+    "styled-components": "^6.1.13"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

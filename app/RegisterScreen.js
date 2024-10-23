@@ -1,7 +1,9 @@
+// RegisterScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StatusBar } from 'react-native';
 import styled from 'styled-components/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth } from './firebaseConfig'; 
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 
 const Container = styled.View`
@@ -63,7 +65,7 @@ const LinkText = styled.Text`
 `;
 
 export default function RegisterScreen() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -89,21 +91,14 @@ export default function RegisterScreen() {
     }
 
     try {
-      const usersJSON = await AsyncStorage.getItem('users');
-      const users = usersJSON ? JSON.parse(usersJSON) : [];
-
-      if (users.some((user) => user.username === username)) {
-        Alert.alert('Error', 'Username already exists');
-        return;
-      }
-
-      users.push({ username, password });
-      await AsyncStorage.setItem('users', JSON.stringify(users));
-
+      // Register the user
+      await createUserWithEmailAndPassword(auth, email, password);
       Alert.alert('Success', 'Registration successful');
+
+      // Redirect to LoginScreen after registration
       router.push('/LoginScreen');
     } catch (error) {
-      Alert.alert('Error', 'An error occurred during registration');
+      Alert.alert('Error', error.message);
     }
   };
 
@@ -114,10 +109,10 @@ export default function RegisterScreen() {
       <LoginBox>
         <Title>Register</Title>
         <Input
-          placeholder="Username"
+          placeholder="Email"
           placeholderTextColor="gray"
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
         />
         <Input
           placeholder="Password"
