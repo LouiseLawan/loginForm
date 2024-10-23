@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import styled from 'styled-components/native';
@@ -63,28 +62,26 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState([]);
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        if (loggedInUser) {
-          router.push(`/WelcomeScreen?username=${loggedInUser.username}`);
-        } else {
-          const savedUser = await AsyncStorage.getItem('loggedInUser');
-          if (savedUser) {
-            const user = JSON.parse(savedUser);
-            setLoggedInUser(user);
-            router.push(`/WelcomeScreen?username=${user.username}`);
-          }
+        const savedUser = await AsyncStorage.getItem('loggedInUser');
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          setLoggedInUser(user);
+          router.replace(`/WelcomeScreen?username=${user.username}`); // Use replace instead of push
         }
       } catch (error) {
         console.error('Error reading login status:', error);
+      } finally {
+        setLoading(false); // Stop loading once login status is checked
       }
     };
 
     checkLoginStatus();
-  }, [loggedInUser, setLoggedInUser]);
-
+  }, [setLoggedInUser, router]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -105,12 +102,11 @@ export default function LoginScreen() {
 
       if (user) {
         if (user.password === password) {
-     
           await AsyncStorage.setItem('loggedInUser', JSON.stringify({ username }));
           setLoggedInUser({ username });
           setUsername('');
           setPassword('');
-          router.push(`/WelcomeScreen?username=${username}`);
+          router.replace(`/WelcomeScreen?username=${username}`); // Use replace to prevent going back to the login screen
         } else {
           Alert.alert('Error', 'Incorrect password');
         }
@@ -121,6 +117,10 @@ export default function LoginScreen() {
       Alert.alert('Error', 'An error occurred during login');
     }
   };
+
+  if (loading) {
+    return <Text>Loading...</Text>; // Optionally show a loading state
+  }
 
   return (
     <Container>

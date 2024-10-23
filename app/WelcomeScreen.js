@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,30 +47,45 @@ const ButtonText = styled.Text`
 export default function WelcomeScreen() {
   const { username } = useLocalSearchParams();
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Track login status
 
   // Memoizing the greeting message
   const greetingMessage = useMemo(() => `Welcome, ${username}!`, [username]);
 
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const user = await AsyncStorage.getItem('loggedInUser');
+      if (!user) {
+        setIsLoggedIn(false);
+        router.replace('/LoginScreen');
+      }
+    };
+    checkLoginStatus();
+  }, [router]);
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('loggedInUser');
-      router.push(`/LoginScreen`);
+      setIsLoggedIn(false); // Set login state to false after logout
+      router.replace('/LoginScreen'); // Ensure navigation to login
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
 
   return (
-    <Container>
-      <StatusBar barStyle="light-content" />
-      <DashboardBox>
-        <Title>{greetingMessage}</Title>
-        <Section>
-          <Button onPress={handleLogout}>
-            <ButtonText>Logout</ButtonText>
-          </Button>
-        </Section>
-      </DashboardBox>
-    </Container>
+    isLoggedIn && (
+      <Container>
+        <StatusBar barStyle="light-content" />
+        <DashboardBox>
+          <Title>{greetingMessage}</Title>
+          <Section>
+            <Button onPress={handleLogout}>
+              <ButtonText>Logout</ButtonText>
+            </Button>
+          </Section>
+        </DashboardBox>
+      </Container>
+    )
   );
 }
